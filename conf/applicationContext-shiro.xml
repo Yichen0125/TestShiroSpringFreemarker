@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>
+    </bean>
+	
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="realm" ref="testShiroRealm"/>
+    </bean>
+    
+    <!-- 可以自动调用配置在 IOC 容器中 shiro bean 的 init 和 destroy 方法 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    
+    
+    <!-- 配置 Shiro Filter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="index.ftl"/>
+        <property name="unauthorizedUrl" value="error"/>
+        <!-- 
+        	1. anon: 可以被匿名访问. 即即使没有登录的情况下, 也可以访问
+        	2. authc: 必须登录后才可以访问
+        	3. 注意: URL 权限采取第一次匹配优先的方式
+        	4. logout: shiro 登出. 
+        	5. roles: 可以为访问的 URL 匹配对应的权限. 
+        -->
+        
+        
+        <property name="filterChainDefinitions">
+            <value>
+              /index.ftl = anon
+                /login = anon
+                /logout = logout
+                
+                /toAdmin = roles[user1]
+                /toUser = roles[user2]
+                /show = roles[user1]
+                /success = authc
+                
+                /** = authc
+            </value>
+        </property>
+	</bean>
+</beans>
